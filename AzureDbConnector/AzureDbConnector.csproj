@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Azure.Functions\GetUrlLinks.txt" />
+    <Content Include="Azure.Functions\GetUrlLinksPaged.txt" />
     <Content Include="Azure.Functions\GetUsers.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
