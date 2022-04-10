@@ -1,0 +1,50 @@
+﻿#r "Newtonsoft.Json"
+using Newtonsoft.Json;
+using System.Net.Http.Formatting;
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using System;
+using System.Data.SqlClient;
+
+public static List<UrlLink> Run(HttpRequest req, ILogger log){
+     string SqlConnectionString ="Server=tcp:??.database.windows.net,1433;Initial Catalog=??;Persist Security Info=False;User ID=dbUserOne;Password=??;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
+    List<UrlLink> urlLinks = new List<UrlLink>(); 
+    SqlConnection conn = new SqlConnection(SqlConnectionString); 
+ 
+    SqlCommand command = new SqlCommand("sp_UrlCache_GetAllUrls", conn);
+
+    conn.Open();
+    command.CommandType = System.Data.CommandType.StoredProcedure;
+
+    int rowsProcessed=0;
+    using (SqlDataReader reader = command.ExecuteReader())
+    {
+        while (reader.HasRows)
+        {
+            while(reader.Read())
+            {
+                UrlLink urlLink = new UrlLink(){
+                Id=reader.GetInt32(0),
+                Url=reader.GetString(1)
+            };
+            urlLinks.Add(urlLink);
+            log.LogInformation("{0} {1}", reader.GetInt32(0), reader.GetString(1));
+            rowsProcessed++;
+        }
+
+        log.LogInformation($"Successfully processed at: {DateTime.Now}");
+        log.LogInformation($"Rows processed: "+ rowsProcessed.ToString());
+        reader.NextResult();    
+    }
+        conn.Close();
+    }
+     return urlLinks;
+    
+}
+    public class UrlLink
+    {
+        public int Id{get; set;}
+        public string Url { get; set; }
+    }

@@ -1,0 +1,50 @@
+﻿#r "Newtonsoft.Json"
+using Newtonsoft.Json;
+using System.Net.Http.Formatting;
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using System;
+using System.Data.SqlClient;
+public static List<User> Run(HttpRequest req, ILogger log)
+{
+    string SqlConnectionString ="Server=tcp:??.database.windows.net,1433;Initial Catalog=??;Persist Security Info=False;User ID=dbUserOne;Password=??;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+    List<User> users = new List<User>();
+ 
+    SqlConnection conn = new SqlConnection(SqlConnectionString); 
+    SqlCommand command = new SqlCommand("sp_Users_GetAllUsers", conn);
+
+    conn.Open();
+    command.CommandType = System.Data.CommandType.StoredProcedure;
+
+    int rowsProcessed=0;
+    using (SqlDataReader reader = command.ExecuteReader())
+    {    
+        while (reader.HasRows)
+        {
+            while(reader.Read())
+            {
+                User user = new User(){
+                    FirstName=reader.GetString(1),
+                    LastName=reader.GetString(2), 
+                    UserId=reader.GetString(3)
+                };
+                users.Add(user);
+                log.LogInformation("{0} {1} {2} {3}", reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3));
+                rowsProcessed++;                
+            }     
+
+        log.LogInformation($"Successfully processed at: {DateTime.Now}");
+        log.LogInformation($"Rows processed: "+ rowsProcessed.ToString());
+        reader.NextResult();
+    }
+     conn.Close();
+    }
+     return users;    
+}
+    public class User
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string UserId   {get; set; }
+    }
