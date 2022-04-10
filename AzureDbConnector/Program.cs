@@ -12,6 +12,10 @@ namespace AzureDbConnector
         static void Main(string[] args)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            ScriptHelper helper = new ScriptHelper();
+
+           // helper.CreateDummyInsertsForSproc();
+
             builder.DataSource = "?.database.windows.net";
             builder.UserID = "?";
             builder.Password = "?";
